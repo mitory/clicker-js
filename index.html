@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="style.css">
+	<link rel="icon" href="favicon.ico" type="image/x-icon">
+	<title>myaw clicker</title>
+</head>
+<body>
+	<div id="app">
+		
+		<div class="header">
+			<span id="score">0</span>
+			<span class=note>♪</span>
+		</div>
+		<div class="circle">
+			<img src="popcat1.png" alt="" id="popcat_img" draggable="false">
+		</div>
+
+	</div>
+
+	<script>
+		const $popcat_img = document.getElementById('popcat_img')
+		const $circle = document.querySelector('.circle')
+		const $score = document.getElementById('score')
+		let timeoutId = null;
+
+		function start() {
+			setScore(getScore())
+		}
+
+		function setScore(score) {
+			localStorage.setItem('score', score)
+			$score.textContent = score;
+		}
+
+		function getScore() {
+			return Number(localStorage.getItem('score')) ?? 0;
+		}
+
+		function incrementScore() {
+			setScore(getScore() + 1)
+		}
+
+		const sounds = ['myaw1.mp3'];
+
+		function playRandomSound() {
+			const randomIndex = Math.floor(Math.random() * sounds.length);
+			const audio = new Audio(sounds[randomIndex]);
+			const volume = Math.min(Math.max(Math.random() , 0.01), 0.6);
+			audio.volume = volume;
+			audio.play();
+		}
+
+		$circle.addEventListener('click', (event) => {
+			const rect = $circle.getBoundingClientRect();
+
+			const offsetX = event.clientX - rect.left;
+			const offsetY = event.clientY - rect.top;
+
+			const plusNote = document.createElement('div');
+			plusNote.classList.add('plus-note');
+			plusNote.textContent = '♪';
+
+			plusNote.style.left = `${offsetX}px`;
+			plusNote.style.top = `${offsetY}px`;
+
+			$circle.appendChild(plusNote);
+
+			setTimeout(() => {
+				plusNote.remove();
+			}, 2000);
+
+
+			const DEG = 20;
+
+			const tiltX = (offsetY / rect.height) * DEG;
+			const tiltY = (offsetX / rect.width) * DEG;
+
+			$circle.style.setProperty('--tiltX', `${tiltX}deg`);
+			$circle.style.setProperty('--tiltY', `${tiltY}deg`);
+
+			setTimeout(() => {
+				$circle.style.setProperty('--tiltX', `0deg`);
+				$circle.style.setProperty('--tiltY', `0deg`);
+			}, 100);
+
+			playRandomSound();
+			$popcat_img.src = 'popcat2.png';
+
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
+
+			timeoutId = setTimeout(() => {
+				$popcat_img.src = 'popcat1.png';
+			}, 500);
+			incrementScore()
+		});
+
+		start();
+	</script>
+</body>
+</html>
